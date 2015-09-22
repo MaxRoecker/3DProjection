@@ -1,4 +1,4 @@
-var models = [{
+var modelsJSON = [{
   "name": "cube",
   "vertices": {
     "0": {
@@ -144,63 +144,146 @@ var models = [{
     "5": [8, 10, 7, 2, 1],
     "6": [9, 10, 8, 6]
   }
-}]
+}];
 
-var vectorFactory = function(x, y, z) {
-  var obj = {
-    'x': x || 0,
-    'y': y || 0,
-    'z': z || 0
-  };
-  return obj;
+function Vector(x, y, z) {
+  this.x = x || 0;
+  this.y = y || 0;
+  this.z = z || 0;
+};
+Vector.prototype.toString = function() {
+  return "<" + this.x + "," + this.y + "," + this.z + ">";
+};
+Vector.prototype.crossProduct = function(u, v) {
+  return new Vector(
+    u.y * v.z - u.z * v.y,
+    u.z * v.x - u.x * v.z,
+    u.x * v.y - u.y * v.x
+  );
+};
+Vector.prototype.dotProduct = function(u, v) {
+  return u.x * v.x + u.y * v.y + u.z * v.z;
 };
 
-var crossProduct = function(u,v){
-  return vectorFactory(
-    u.y*v.z - u.z*v.y,
-    u.z*v.x - u.x*v.z,
-    u.x*v.y - u.y*v.x
-  );
-}
+var Matrix = {};
+Matrix.multiply = function(a, b) {
+  var aNumRows = a.length,
+    aNumCols = a[0].length,
+    bNumRows = b.length,
+    bNumCols = b[0].length,
+    m = new Array(aNumRows);
+  for (var r = 0; r < aNumRows; ++r) {
+    m[r] = new Array(bNumCols);
+    for (var c = 0; c < bNumCols; ++c) {
+      m[r][c] = 0;
+      for (var i = 0; i < aNumCols; ++i) {
+        m[r][c] += a[r][i] * b[i][c];
+      }
+    }
+  }
+  return m;
+};
 
-var dotProduct = function(u,v){
-  return u.x*v.x + u.y*v.y + u.z*v.z;
+function Model(name, vertices, surfaces) {
+  this.name = name;
+  this.vertices = [];
+  this.surfaces = [];
+  for (var point in vertices) {
+    if (vertices.hasOwnProperty(point)) {
+      this.vertices.push(
+        new Vector(
+          vertices[point].x,
+          vertices[point].y,
+          vertices[point].z
+        )
+      );
+    }
+  }
+  for (var surface in surfaces) {
+    if (surfaces.hasOwnProperty(surface)) {
+      this.surfaces.push(surfaces[surface]);
+    }
+  }
 }
+Model.prototype.homogeneousCoordinates = function () {
+  var axisX = new Array(this.vertices.length),
+      axisY = new Array(this.vertices.length),
+      axisZ = new Array(this.vertices.length),
+      axisW = new Array(this.vertices.length);
+  for (var i = 0; i < this.vertices.length; i++) {
+    axisX[i] = (this.vertices[i].x);
+    axisY[i] = (this.vertices[i].y);
+    axisZ[i] = (this.vertices[i].z);
+    axisW[i] = 1;
+  }
+  return [axisX,axisY,axisZ,axisW];
+};
 
+
+
+GraphicDirectives = {};
+GraphicDirectives.projection = function(planePoint, planeNormal, viewPoint) {
+  var d0 = planeNormal.dotProduct(planeNormal, planePoint),
+    d1 = planeNormal.dotProduct(viewPoint, planeNormal),
+    d = d0 - d1;
+  return [
+    [d + viewPoint.x * planeNormal.x, viewPoint.x * planeNormal.y, viewPoint.x * planeNormal.z, -(viewPoint.x * d0)],
+    [viewPoint.y * planeNormal.x, d + viewPoint.y * planeNormal.y, viewPoint.y * planeNormal.z, -(viewPoint.y * d0)],
+    [viewPoint.z * planeNormal.x, viewPoint.z * planeNormal.y, d + viewPoint.z * planeNormal.z, -(viewPoint.z * d0)],
+    [planeNormal.x, planeNormal.y, planeNormal.z, -d1],
+  ];
+};
+GraphicDirectives.translation = function(dx, dy, dz) {
+  return [
+    [1, 0, 0, dx],
+    [0, 1, 0, dy],
+    [0, 0, 1, dz],
+    [0, 0, 0, 1],
+  ];
+};
 
 
 var app = angular.module('3DProjections', []);
 
 app.controller('mainController', ['$scope', function($scope) {
-  $scope.models = models;
-  $scope.model = models[0];
-  $scope.viewpoint = vectorFactory(0, 1, 0);
+  $scope.models = new Array(modelsJSON.length);
+  for (var i = 0; i < modelsJSON.length; i++) {
+    var model = modelsJSON[i];
+    $scope.models[i] = new Model(model.name,model.vertices,model.surfaces);
+  };
+
+  $scope.model = $scope.models[0];
+  $scope.viewpoint = new Vector(0, 0, -20);
   $scope.plane = [
-    vectorFactory(1, 0, 0),
-    vectorFactory(0, 0, 0),
-    vectorFactory(0, 1, 0)
+    new Vector(20, 0, 0),
+    new Vector(0, 0, 0),
+    new Vector(0, 20, 0)
   ];
 
   $scope.project = function(model, plane, viewpoint) {
-    var u, v, n, d0;
-    u = vectorFactory(
+    var u, v, n, d0, m, p;
+    u = new Vector(
       plane[1].x - plane[0].x,
       plane[1].y - plane[0].y,
       plane[1].z - plane[0].z
     );
-    v = vectorFactory(
+    v = new Vector(
       plane[2].x - plane[0].x,
       plane[2].y - plane[0].y,
       plane[2].z - plane[0].z
     );
-    //Cross product
-    n = crossProduct(u,v);
-    d0 = dotProduct(n,plane[0]);
+    n = u.crossProduct(u, v);
+    d0 = n.dotProduct(n, plane[0]);
+    m = GraphicDirectives.projection(plane[0], n, viewpoint);
+    p = model.homogeneousCoordinates();
 
-    console.log(u);
-    console.log(v);
-    console.log(n);
-    console.log('Produto escalar: '+d0);
+    console.log(viewpoint);
+    console.table(m);
+    console.table(p);
+    console.table(Matrix.multiply(m,p));
+
+
+
 
   };
 
