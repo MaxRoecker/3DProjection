@@ -287,7 +287,10 @@ app.controller('mainController', ['$scope', function($scope) {
     new Vector(0, 0, 0),
     new Vector(0, 20, 0)
   ];
-  $scope.projection = [];
+  $scope.projection = {
+    'dots': [],
+    'lines': []
+  };
 
   $scope.project = function(model, plane, viewpoint) {
     var u, v, n, d0, m, p;
@@ -306,7 +309,19 @@ app.controller('mainController', ['$scope', function($scope) {
     d0 = n.dotProduct(n, plane[0]);
     p = model.homogeneousCoordinates();
     m = Matrix.multiply(GraphicDirectives.projection(plane[0], n, viewpoint),p);
-    $scope.projection =  model.cartesianCoordinates(m);
+    $scope.projection.dots =  model.cartesianCoordinates(m);
+    var lines = [];
+    for (var i = 0; i < model.surfaces.length; i++) {
+      var dots = model.surfaces[i];
+      for (var j = 0; j < dots.length; j++) {
+        u = $scope.projection.dots[dots[j]];
+        v = $scope.projection.dots[dots[(j+1)%dots.length]];
+        lines.push({'u':u,'v':v});
+      }
+    }
+    $scope.projection.lines = lines;
+
+
   };
 
 
