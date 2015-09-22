@@ -272,6 +272,14 @@ GraphicDirectives.translation = function(dx, dy, dz) {
   ];
 };
 
+GraphicDirectives.reflectionY = function(matrix) {
+  return [
+    [1, 0, 0],
+    [0, -1, 0],
+    [0, 0, 1]
+  ];
+};
+
 
 var app = angular.module('3DProjections', []);
 
