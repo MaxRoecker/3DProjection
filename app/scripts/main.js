@@ -283,11 +283,12 @@ GraphicDirectives.translation = function(dx, dy, dz) {
   ];
 };
 
-GraphicDirectives.reflectionY = function(matrix) {
+GraphicDirectives.reflectionY = function() {
   return [
-    [1, 0, 0],
-    [0, -1, 0],
-    [0, 0, 1]
+    [1, 0, 0, 0],
+    [0, -1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
   ];
 };
 
@@ -314,7 +315,7 @@ app.controller('mainController', ['$scope', function($scope) {
   };
 
   $scope.project = function(model, plane, viewpoint) {
-    var u, v, n, d0, m, p;
+    var u, v, n, d0, m, t, p;
     u = new Vector(
       plane[0].x - plane[1].x,
       plane[0].y - plane[1].y,
@@ -326,11 +327,17 @@ app.controller('mainController', ['$scope', function($scope) {
       plane[2].z - plane[1].z
     );
     n = u.crossProduct(u, v);
-    console.log(n);
     d0 = n.dotProduct(n, plane[0]);
     p = model.homogeneousCoordinates();
     m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[0], n, viewpoint),p);
-    $scope.projection.dots =  model.cartesianCoordinates(m);
+    m = model.cartesianCoordinates(m);
+    console.table(m);
+    m = Matrix.multiply(GraphicDirectives.reflectionY(),m);
+    console.table(m);
+
+    /*$scope.projection.dots = m;
+
+
     var lines = [];
     for (var i = 0; i < model.surfaces.length; i++) {
       var dots = model.surfaces[i];
@@ -340,7 +347,7 @@ app.controller('mainController', ['$scope', function($scope) {
         lines.push({'u':u,'v':v});
       }
     }
-    $scope.projection.lines = lines;
+    $scope.projection.lines = lines;*/
 
 
   };
