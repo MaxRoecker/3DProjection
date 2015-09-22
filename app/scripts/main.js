@@ -329,7 +329,7 @@ app.controller('mainController', ['$scope', function($scope) {
     console.log(n);
     d0 = n.dotProduct(n, plane[0]);
     p = model.homogeneousCoordinates();
-    m = Matrix.multiply(GraphicDirectives.projection(plane[0], n, viewpoint),p);
+    m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[0], n, viewpoint),p);
     $scope.projection.dots =  model.cartesianCoordinates(m);
     var lines = [];
     for (var i = 0; i < model.surfaces.length; i++) {
