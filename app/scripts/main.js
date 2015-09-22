@@ -239,7 +239,7 @@ Model.prototype.cartesianCoordinates = function (homogeneousCoordinates) {
 
 
 GraphicDirectives = {};
-GraphicDirectives.projection = function(planePoint, planeNormal, viewPoint) {
+GraphicDirectives.projectionPerspective = function(planePoint, planeNormal, viewPoint) {
   var d0 = planeNormal.dotProduct(planePoint, planeNormal),
     d1 = planeNormal.dotProduct(viewPoint, planeNormal),
     d = d0 - d1;
@@ -250,6 +250,19 @@ GraphicDirectives.projection = function(planePoint, planeNormal, viewPoint) {
     [planeNormal.x, planeNormal.y, planeNormal.z, -d1],
   ];
 };
+
+GraphicDirectives.projectionParalel = function(planePoint, planeNormal, viewPoint) {
+  var d0 = planeNormal.dotProduct(planePoint, planeNormal),
+    d1 = planeNormal.dotProduct(viewPoint, planeNormal),
+    d = d0 - d1;
+  return [
+    [d - viewPoint.x * planeNormal.x, -viewPoint.x * planeNormal.y, -viewPoint.x * planeNormal.z, viewPoint.x * d0],
+    [-viewPoint.y * planeNormal.x, d - viewPoint.y * planeNormal.y, -viewPoint.y * planeNormal.z, viewPoint.y * d0],
+    [-viewPoint.z * planeNormal.x, -viewPoint.z * planeNormal.y, d - viewPoint.z * planeNormal.z, viewPoint.z * d0],
+    [0, 0, 0, -d1],
+  ];
+};
+
 GraphicDirectives.translation = function(dx, dy, dz) {
   return [
     [1, 0, 0, dx],
