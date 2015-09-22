@@ -133,8 +133,8 @@
             <hr/>
 
             <svg width="600" height="600" viewPort="0 0 600 600" id="projection">
-              <g ng-repeat="(name,vertices) in model.vertices">
-                <circle cx="{{vertices.x}}" cy="{{vertices.y}}" r="3" />
+              <g ng-repeat="(name,vertices) in projection">
+                <circle cx="{{vertices.x * 10}}" cy="{{vertices.y * 10}}" r="2" />
               </g>
 
               <!--<g>

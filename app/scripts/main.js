@@ -155,11 +155,17 @@ Vector.prototype.toString = function() {
   return "<" + this.x + "," + this.y + "," + this.z + ">";
 };
 Vector.prototype.crossProduct = function(u, v) {
-  return new Vector(
+  var w = new Vector(
     u.y * v.z - u.z * v.y,
     u.z * v.x - u.x * v.z,
     u.x * v.y - u.y * v.x
   );
+  for (var axis in w) {
+    if (w.hasOwnProperty(axis)) {
+      w[axis] = (w[axis] === 0)? 0 : w[axis];
+    }
+  }
+  return w;
 };
 Vector.prototype.dotProduct = function(u, v) {
   return u.x * v.x + u.y * v.y + u.z * v.z;
@@ -218,18 +224,29 @@ Model.prototype.homogeneousCoordinates = function () {
   }
   return [axisX,axisY,axisZ,axisW];
 };
+Model.prototype.cartesianCoordinates = function (homogeneousCoordinates) {
+  var cartesianCoordinates = [homogeneousCoordinates[0].length];
+  for (var i = 0; i < homogeneousCoordinates[0].length; i++) {
+    cartesianCoordinates[i] = new Vector(
+      homogeneousCoordinates[0][i] / homogeneousCoordinates[3][i],
+      homogeneousCoordinates[1][i] / homogeneousCoordinates[3][i],
+      homogeneousCoordinates[2][i] / homogeneousCoordinates[3][i]
+    );
+  }
+  return cartesianCoordinates;
+};
 
 
 
 GraphicDirectives = {};
 GraphicDirectives.projection = function(planePoint, planeNormal, viewPoint) {
-  var d0 = planeNormal.dotProduct(planeNormal, planePoint),
+  var d0 = planeNormal.dotProduct(planePoint, planeNormal),
     d1 = planeNormal.dotProduct(viewPoint, planeNormal),
     d = d0 - d1;
   return [
-    [d + viewPoint.x * planeNormal.x, viewPoint.x * planeNormal.y, viewPoint.x * planeNormal.z, -(viewPoint.x * d0)],
-    [viewPoint.y * planeNormal.x, d + viewPoint.y * planeNormal.y, viewPoint.y * planeNormal.z, -(viewPoint.y * d0)],
-    [viewPoint.z * planeNormal.x, viewPoint.z * planeNormal.y, d + viewPoint.z * planeNormal.z, -(viewPoint.z * d0)],
+    [d + viewPoint.x * planeNormal.x, viewPoint.x * planeNormal.y, viewPoint.x * planeNormal.z, -viewPoint.x * d0],
+    [viewPoint.y * planeNormal.x, d + viewPoint.y * planeNormal.y, viewPoint.y * planeNormal.z, -viewPoint.y * d0],
+    [viewPoint.z * planeNormal.x, viewPoint.z * planeNormal.y, d + viewPoint.z * planeNormal.z, -viewPoint.z * d0],
     [planeNormal.x, planeNormal.y, planeNormal.z, -d1],
   ];
 };
@@ -259,32 +276,26 @@ app.controller('mainController', ['$scope', function($scope) {
     new Vector(0, 0, 0),
     new Vector(0, 20, 0)
   ];
+  $scope.projection = [];
 
   $scope.project = function(model, plane, viewpoint) {
     var u, v, n, d0, m, p;
     u = new Vector(
-      plane[1].x - plane[0].x,
-      plane[1].y - plane[0].y,
-      plane[1].z - plane[0].z
+      plane[0].x - plane[1].x,
+      plane[0].y - plane[1].y,
+      plane[0].z - plane[1].z
     );
     v = new Vector(
-      plane[2].x - plane[0].x,
-      plane[2].y - plane[0].y,
-      plane[2].z - plane[0].z
+      plane[2].x - plane[1].x,
+      plane[2].y - plane[1].y,
+      plane[2].z - plane[1].z
     );
     n = u.crossProduct(u, v);
+    console.log(n);
     d0 = n.dotProduct(n, plane[0]);
-    m = GraphicDirectives.projection(plane[0], n, viewpoint);
     p = model.homogeneousCoordinates();
-
-    console.log(viewpoint);
-    console.table(m);
-    console.table(p);
-    console.table(Matrix.multiply(m,p));
-
-
-
-
+    m = Matrix.multiply(GraphicDirectives.projection(plane[0], n, viewpoint),p);
+    $scope.projection =  model.cartesianCoordinates(m);
   };
 
 
