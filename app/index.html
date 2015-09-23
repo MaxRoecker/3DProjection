@@ -89,7 +89,7 @@
 
             <div class="form-group row" ng-repeat="(name,vertice) in model.vertices track by $index">
               <div class="col-xs-3">
-                <input type="text" ng-model="name" class="form-control input-sm text-center" />
+                <input type="text" readonly="readonly" ng-model="name" class="form-control input-sm text-center" />
               </div>
               <div class="col-xs-3">
                 <input type="text" ng-model="vertice.x" class="form-control input-sm text-center" placeholder="X" />
@@ -111,7 +111,7 @@
           <div class="panel-body">
             <div class="form-group row" ng-repeat="(name,vertices) in model.surfaces track by $index">
               <div class="col-xs-3">
-                <input type="text" ng-model="name" class="form-control input-sm text-center" />
+                <input type="text" reado  nly="readonly" ng-model="name" class="form-control input-sm text-center" />
               </div>
               <div class="col-xs-9">
                 <!--<select class="form-control" multiple
@@ -150,6 +150,83 @@
         {{model}}
       </div>
 
+    </section>
+    <section id="about" class="row hidden">
+      <h2>
+        Bem-vindo ao sistema de projeções.
+      </h2>
+      <p>
+        Através do sistema é possível observar a projeção de qualquer objeto de duas maneiras: persectiva e paralela. Para definir qual projeção deseja, basta seleciona-lá logo ao lado do botão "Project" no topo da área definida para projeção.
+      </p>
+      <h4>Como definir o ponto de vista:</h4>
+      <p>
+        Para definir o ponto de vista, basta preenchermos os três campos no local solicitado, os campos são os vores x, y e z do ponto de vista.
+      </p>
+      <h4>Como definir um plano de pojeção:</h4>
+      <p>
+        Para definir um plano de projeção é necessário informar três pontos pertencentes ao mesmo. Os pontos são definidos nos campos logo abaixo ao label solicitante. Para cada ponto deve ser informada as coordenadas x, y e z.
+      </p>
+      <h4>Como definir um objeto para projetar:</h4>
+      <p>
+        Para projetar um objeto precisamos definir os vértices e suas superfícies:
+        <ol>
+          <li>
+            Vértices:
+            <ul>
+              <li>
+                Definir as coordenadas x, y e z de cada vértice.
+              </li>
+              <li>
+                Para adicionar um novo vértice, basta clicar no botão com o ícone "+" logo abaixo.
+              </li>
+            </ul>
+          </li>
+          <li>
+            Superfícies:
+            <ul>
+              <li>
+                Definir quais são os vértices que contemplam a superfície informada, seguindo a regra da mão direira.
+              </li>
+              <li>
+                Para adicionar uma nova superfície, basta clicar no botão com o ícone "+" logo abaixo.
+              </li>
+            </ul>
+          </li>
+        </ol>
+      </p>
+      <h4>Como escolher qual o tipo de projeção desejada:</h4>
+      <p>
+        As opções de projeção ficam ao lado do botão "Project", basta selecionar qual a desejada e clicar no botão para efetuar a projeção.
+      </p>
+      <h4>Como esconder as faces ocultas da projeção:</h4>
+      <p>
+        Para esconder as faces ocultas da projeção basta marca a opção <strong>XXXXXX</strong> ao lado do botão "Project".
+      </p>
+      <h4>Como mudar o ponto de vista:</h4>
+      <p>
+        Para mudar o ponto de vista existem duas opções:
+        <ol>
+          <li>
+            Definir um novo ponto de vista através nos campos x, y e z do ponto de vista
+          </li>
+          <li>
+            Após uma porjeção realizada, apertar as teclas <strong>T1 T2 T3 T4...</strong> para deslocar o ponto de vista.
+          </li>
+        </ol>
+      </p>
+    </section>
+    <section id="contact" class="row hidden">
+      <p>
+        Qualquer dúvida, contato, sugestão ou reclamação entrar em contato com:
+        <ul>
+          <li>
+            João Luiz Ramalheira de Almeida - <a href="mailto:jlramalheira@gmail.com">jlramalheira@gmail.com</a>
+          </li>
+          <li>
+            Max Naegeler Roecker - <a href="mailto:max.roecker@gmail.com">max.roecker@gmail.com</a>
+          </li>
+        </ul>
+      </p>
     </section>
 
 
