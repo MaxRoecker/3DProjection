@@ -173,13 +173,43 @@ Vector.prototype.crossProduct = function(u, v) {
   );
   for (var axis in w) {
     if (w.hasOwnProperty(axis)) {
-      w[axis] = (w[axis] === 0)? 0 : w[axis];
+      w[axis] = (w[axis] === 0) ? 0 : w[axis];
     }
   }
   return w;
 };
 Vector.prototype.dotProduct = function(u, v) {
   return u.x * v.x + u.y * v.y + u.z * v.z;
+};
+Vector.prototype.min = function(vectors) {
+  var min = new Vector(Infinity, Infinity, Infinity);
+  for (var i = 0; i < vectors.length; i++) {
+    if (vectors[i].x < min.x) {
+      min.x = vectors[i].x;
+    }
+    if (vectors[i].y < min.y) {
+      min.y = vectors[i].y;
+    }
+    if (vectors[i].z < min.z) {
+      min.z = vectors[i].z;
+    }
+  }
+  return min;
+};
+Vector.prototype.max = function(vectors) {
+  var max = new Vector(-Infinity, -Infinity, -Infinity);
+  for (var i = 0; i < vectors.length; i++) {
+    if (vectors[i].x > max.x) {
+      max.x = vectors[i].x;
+    }
+    if (vectors[i].y > max.y) {
+      max.y = vectors[i].y;
+    }
+    if (vectors[i].z > max.z) {
+      max.z = vectors[i].z;
+    }
+  }
+  return max;
 };
 
 var Matrix = {};
@@ -222,20 +252,20 @@ function Model(name, vertices, surfaces) {
     }
   }
 }
-Model.prototype.homogeneousCoordinates = function () {
-  var axisX = new Array(this.vertices.length),
-      axisY = new Array(this.vertices.length),
-      axisZ = new Array(this.vertices.length),
-      axisW = new Array(this.vertices.length);
-  for (var i = 0; i < this.vertices.length; i++) {
-    axisX[i] = (this.vertices[i].x);
-    axisY[i] = (this.vertices[i].y);
-    axisZ[i] = (this.vertices[i].z);
+Model.prototype.homogeneousCoordinates = function(cartesianCoordinates) {
+  var axisX = new Array(cartesianCoordinates.length),
+    axisY = new Array(cartesianCoordinates.length),
+    axisZ = new Array(cartesianCoordinates.length),
+    axisW = new Array(cartesianCoordinates.length);
+  for (var i = 0; i < cartesianCoordinates.length; i++) {
+    axisX[i] = (cartesianCoordinates[i].x);
+    axisY[i] = (cartesianCoordinates[i].y);
+    axisZ[i] = (cartesianCoordinates[i].z);
     axisW[i] = 1;
   }
-  return [axisX,axisY,axisZ,axisW];
+  return [axisX, axisY, axisZ, axisW];
 };
-Model.prototype.cartesianCoordinates = function (homogeneousCoordinates) {
+Model.prototype.cartesianCoordinates = function(homogeneousCoordinates) {
   var cartesianCoordinates = [homogeneousCoordinates[0].length];
   for (var i = 0; i < homogeneousCoordinates[0].length; i++) {
     cartesianCoordinates[i] = new Vector(
@@ -274,6 +304,42 @@ GraphicDirectives.projectionParalel = function(planePoint, planeNormal, viewPoin
   ];
 };
 
+GraphicDirectives.windowViewPort = function(window, viewport) {
+  var a, t, aspectWindow, aspectViewport, newMaxX, newMaxY, sx, sy;
+
+  aspectWindow = (window.max.x - window.min.x) / (window.max.y - window.min.y);
+  aspectViewport = (viewport.max.x - viewport.min.x) / (viewport.max.y - viewport.min.y);
+
+  sx = (viewport.max.x - viewport.min.x) / (window.max.x - window.min.x);
+  sy = (viewport.max.y - viewport.min.y) / (window.max.y - window.min.y);
+
+  t = [
+    [sx, 0, 0, -sx * window.min.x],
+    [0, sy, 0, -sy * window.min.y],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
+  ];
+
+  if (aspectWindow > aspectViewport) {
+    newMaxY = ((viewport.max.x - viewport.min.x) / aspectWindow) + viewport.min.y;
+    a = [
+      [1, 0, 0, 0],
+      [0, 1, 0, (viewport.max.y - newMaxY) / 2],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]
+    ];
+  } else {
+    newMaxX = ((viewport.max.y - viewport.min.y) * aspectWindow) + viewport.min.x;
+    a = [
+      [1, 0, 0, (viewport.max.x - newMaxX) / 2],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]
+    ];
+  }
+  return Matrix.multiply(a, t);
+};
+
 GraphicDirectives.translation = function(dx, dy, dz) {
   return [
     [1, 0, 0, dx],
@@ -299,7 +365,7 @@ app.controller('mainController', ['$scope', function($scope) {
   $scope.models = new Array(modelsJSON.length);
   for (var i = 0; i < modelsJSON.length; i++) {
     var model = modelsJSON[i];
-    $scope.models[i] = new Model(model.name,model.vertices,model.surfaces);
+    $scope.models[i] = new Model(model.name, model.vertices, model.surfaces);
   };
 
   $scope.model = $scope.models[0];
@@ -328,19 +394,35 @@ app.controller('mainController', ['$scope', function($scope) {
     );
     n = u.crossProduct(u, v);
     d0 = n.dotProduct(n, plane[0]);
-    p = model.homogeneousCoordinates();
-    m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[0], n, viewpoint),p);
+    p = model.homogeneousCoordinates(model.vertices);
+    m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[0], n, viewpoint), p);
     m = model.cartesianCoordinates(m);
 
+    var window = {
+      'min': new Vector().min(m),
+      'max': new Vector().max(m)
+    }
+    viewport = {
+      'min': new Vector(0,0,0),
+      'max': new Vector(550,550,0),
+    }
+    p = model.homogeneousCoordinates(m);
+    m = Matrix.multiply(GraphicDirectives.windowViewPort(window,viewport),p);
+    m = model.cartesianCoordinates(m);
     $scope.projection.dots = m;
+    console.table(model.vertices);
+    console.table(m);
 
     var lines = [];
     for (var i = 0; i < model.surfaces.length; i++) {
       var dots = model.surfaces[i];
       for (var j = 0; j < dots.length; j++) {
         u = $scope.projection.dots[dots[j]];
-        v = $scope.projection.dots[dots[(j+1)%dots.length]];
-        lines.push({'u':u,'v':v});
+        v = $scope.projection.dots[dots[(j + 1) % dots.length]];
+        lines.push({
+          'u': u,
+          'v': v
+        });
       }
     }
     $scope.projection.lines = lines;
