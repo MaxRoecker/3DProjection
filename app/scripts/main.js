@@ -404,7 +404,7 @@ app.controller('mainController', ['$scope', function($scope) {
     }
     viewport = {
       'min': new Vector(0,0,0),
-      'max': new Vector(550,550,0),
+      'max': new Vector(400,400,0),
     }
     p = model.homogeneousCoordinates(m);
     m = Matrix.multiply(GraphicDirectives.windowViewPort(window,viewport),p);
