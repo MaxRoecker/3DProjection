@@ -45,11 +45,10 @@
         <div class="panel panel-default">
           <div class="panel-body">
             <div class="form-group">
-              <label>Ponto de vista</label>
+              <label><abbr title="Utilize as teclas A,D,S,W,Q e E para alterar este valor">Ponto de vista</abbr></label>
               <div class="row">
                 <div class="col-xs-4">
-                  <input type="number" ng-model="viewpoint.x" id="viewpoint-x" class="form-control input-sm text-center"
-                  />
+                  <input type="number" ng-model="viewpoint.x" id="viewpoint-x" class="form-control input-sm text-center" />
                 </div>
                 <div class="col-xs-4">
                   <input type="number" ng-model="viewpoint.y" class="form-control input-sm text-center" />
@@ -58,7 +57,6 @@
                   <input type="number" ng-model="viewpoint.z" class="form-control input-sm text-center" />
                 </div>
               </div>
-              {{viewpoint}}
             </div>
             <div class="form-group">
               <label>Plano de projeção</label>
@@ -76,7 +74,6 @@
                   <input type="text" ng-model="point.z" class="form-control input-sm text-center" />
                 </div>
               </div>
-              {{plane}}
             </div>
           </div>
         </div>
@@ -132,8 +129,7 @@
                           ng-model="vertices"
                           ng-options="name for (name,vertice) in model.vertices">
                   </select>-->
-                  <input type="text" ng-model="surface" class="form-control input-sm text-center" ng-change="newSurface($index,surface)"
-                  />
+                  <input type="text" ng-model="surface" class="form-control input-sm text-center" ng-change="newSurface($index,surface)" />
                 </div>
               </div>
               <div class="row">
@@ -155,8 +151,7 @@
           <div class="panel-body">
             <div class="row">
               <div class="col-xs-2">
-                <button class="btn btn-success btn" ng-click="project(projection.type, projection.grid, model, plane, viewpoint)"
-                id="btn-project">Projetar</button>
+                <button class="btn btn-success btn" ng-click="project(projection.type, projection.grid, model, plane, viewpoint)" id="btn-project">Projetar</button>
               </div>
               <div class="col-xs-3">
                 <label class="radio">
@@ -174,12 +169,9 @@
                 </label>
               </div>
             </div>
-            <svg width="{{viewport.max.x - viewport.min.x + 45}}" height="{{viewport.max.y - viewport.min.y + 45}}"
-            viewPort="{{viewport.min.x}} {{viewport.min.y}} {{viewport.max.x}} {{viewport.max.y}}" id="projection"
-            style="padding:1rem;">
+            <svg width="{{viewport.max.x - viewport.min.x + 45}}" height="{{viewport.max.y - viewport.min.y + 45}}" viewPort="{{viewport.min.x}} {{viewport.min.y}} {{viewport.max.x}} {{viewport.max.y}}" id="projection" style="padding:1rem;">
               <g ng-repeat="line in projection.lines">
-                <line x1="{{line.u.x}}" y1="{{line.u.y}}" x2="{{line.v.x}}" y2="{{line.v.y}}" stroke="#5cb85c" stroke-width="2"
-                />
+                <line x1="{{line.u.x}}" y1="{{line.u.y}}" x2="{{line.v.x}}" y2="{{line.v.y}}" stroke="#5cb85c" stroke-width="2" />
               </g>
               <g ng-repeat="(name,vertices) in projection.dots track by $index">
                 <circle cx="{{vertices.x}}" cy="{{vertices.y}}" r="4" class="dot" />
@@ -206,33 +198,61 @@
           Bem-vindo ao sistema de projeções.
         </h2>
         <p>
-          Através do sistema é possível observar a projeção de qualquer objeto de duas maneiras: persectiva e paralela.
-          Para definir qual projeção deseja, basta seleciona-lá logo ao lado do botão "Projetar" no
-          topo da área definida para projeção.
+          Através do sistema é possível observar a projeção de qualquer objeto de duas maneiras: persectiva e paralela. Para definir qual projeção deseja, basta seleciona-lá logo ao lado do botão <span class="label label-success">Projetar</span> no topo da área definida para projeção.
         </p>
+        <hr/>
         <h4>Como definir o ponto de vista:</h4>
         <p>
-          Para definir o ponto de vista, basta preenchermos os três campos no local solicitado, os campos são os
-          vores x, y e z do ponto de vista.
+          Para definir o ponto de vista, basta preenchermos os três campos no local solicitado, os campos são os vores x, y e z do ponto de vista.
         </p>
+        <p>
+          Podemos também alterar o ponto de vista utlizando as seguintes teclas:
+        </p>
+        <ul>
+          <li>
+            <kbd>A</kbd> Decrementar 1 do valor de x.
+          </li>
+          <li>
+            <kbd>D</kbd> Incrementar 1 do valor de x.
+          </li>
+          <li>
+            <kbd>S</kbd> Decrementar 1 do valor de y.
+          </li>
+          <li>
+            <kbd>W</kbd> Incrementar 1 do valor de y.
+          </li>
+          <li>
+            <kbd>Q</kbd> Decrementar 1 do valor de z.
+          </li>
+          <li>
+            <kbd>E</kbd> Incrementar 1 do valor de z.
+          </li>
+        </ul>
+        <p>
+          As teclas foram escolhida de acordo com características universais de movimentação em diversos outros aplicativos existentes.
+        </p>
+        <hr/>
         <h4>Como definir um plano de pojeção:</h4>
         <p>
-          Para definir um plano de projeção é necessário informar três pontos pertencentes ao mesmo. Os pontos
-          são definidos nos campos logo abaixo ao label solicitante. Para cada ponto deve ser informada
-          as coordenadas x, y e z.
+          Para definir um plano de projeção é necessário informar três pontos pertencentes ao mesmo. Os pontos são definidos nos campos no local solicitado. Para cada ponto deve ser informada as coordenadas x, y e z.
         </p>
+        <hr/>
         <h4>Como definir um objeto para projetar:</h4>
         <p>
-          Para projetar um objeto precisamos definir os vértices e suas superfícies:
+          Para projetar um objeto precisamos definir os vértices e suas superfícies, podemos escolher algum dos três modelos previamente definidos ou então definir os vértices e as superfícies de um objeto qualquer:
+        </p>
           <ol>
             <li>
               Vértices:
               <ul>
                 <li>
-                  Definir a quantidade de vértices do objeto
+                  Definir as coordenadas x, y e z de cada vértice.
                 </li>
                 <li>
-                  Definir as coordenadas x, y e z de cada vértice.
+                  Para adicionar um vértice basta clicar no botão <span class="label label-primary">+</span> logo abaixo.
+                </li>
+                <li>
+                  Para remover um vértice basta clicar no botão <span class="label label-danger">x</span> logo a esquerda.
                 </li>
               </ul>
             </li>
@@ -240,44 +260,49 @@
               Superfícies:
               <ul>
                 <li>
-                  Definir a quantidade de superfícies do objeto
+                  Definir quais são os vértices que contemplam a superfície informada serapados por "-", seguindo a regra da mão direira.
                 </li>
                 <li>
-                  Definir quais são os vértices que contemplam a superfície informada serapados por "-", seguindo a regra da mão direira.
+                  Para adicionar uma superfície basta clicar no botão <span class="label label-primary">+</span> logo abaixo.
+                </li>
+                <li>
+                  Para remover uma superfície basta clicar no botão <span class="label label-danger">x</span> logo a esquerda.
                 </li>
               </ul>
             </li>
           </ol>
-        </p>
-        <h4>Como escolher qual o tipo de projeção desejada:</h4>
-        <p>
-          As opções de projeção ficam ao lado do botão "Projetar", basta selecionar qual a desejada e clicar no
-          botão para efetuar a projeção.
-        </p>
+        <hr/>
         <h4>Como esconder as faces ocultas da projeção:</h4>
         <p>
-          Para esconder as faces ocultas da projeção basta marca a opção
-          <strong>Esconder grade</strong> ao lado do botão "Projetar".
-        </p>
-
-        <p>
-          <h1>Alunos</h1>
-          <p>
-            João Luiz Ramalheira de Almeida
-          </p>
-          <p>
-            Max Naegeler Roecker
-          </p>
+          Para esconder as faces ocultas da projeção basta desmarcar a opção <span class="label label-default">Grade</span>
         </p>
     </section>
 
 
     <section class="page" ng-if="(view == views[2])">
-      <h1>Contato</h1>
+      <div class="row">
+        <h1>Alunos</h1>
+        <p>João Luiz Ramalheira de Almeida</p>
+        <ul>
+          <li>
+            <a href="mailto:jlramalheira@gmail.com">jlramalheira@gmail.com</a>
+          </li>
+          <li>
+            <small>(44)</small> 9945-4933
+          </li>
+        </ul>
+        <p>Max Naegeler Roecker</p>
+        <ul>
+          <li>
+            <a href="mailto:max.roecker@gmail.com">max.roecker@gmail.com</a>
+          </li>
+          <li>
+            <small>(44)</small> 9923-3441
+          </li>
+        </ul>
+      </div>
+
     </section>
-
-
-
   </div>
 
   <!-- build:js scripts/plugins.js -->
