@@ -24,7 +24,7 @@
   <!-- endbuild -->
 </head>
 
-<body>
+<body onpopstate="" ng-controller="mainController">
   <!--[if lt IE 10]>
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -32,14 +32,15 @@
   <div class="container">
     <header class="header">
       <ul class="nav nav-pills pull-right">
-        <li class="active"><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Contact</a></li>
+        <li ng-class="(view == views[0])? 'active' : ''"><a href="#project" ng-click="view = views[0]">Projeção</a></li>
+        <li ng-class="(view == views[1])? 'active' : ''"><a href="#about" ng-click="view = views[1]">Informações</a></li>
+        <li ng-class="(view == views[2])? 'active' : ''"><a href="#contact" ng-click="view = views[2]">Contato</a></li>
       </ul>
       <h3 class="text-muted">3DProjection</h3>
     </header>
+    <hr/>
 
-    <section class="row" ng-controller="mainController">
+    <section class="page row" ng-if="(view == views[0])">
       <div class="col-sm-4">
         <div class="panel panel-default">
           <div class="panel-body">
@@ -47,7 +48,8 @@
               <label>Ponto de vista</label>
               <div class="row">
                 <div class="col-xs-4">
-                  <input type="number" ng-model="viewpoint.x" class="form-control input-sm text-center" />
+                  <input type="number" ng-model="viewpoint.x" id="viewpoint-x" class="form-control input-sm text-center"
+                  />
                 </div>
                 <div class="col-xs-4">
                   <input type="number" ng-model="viewpoint.y" class="form-control input-sm text-center" />
@@ -56,6 +58,7 @@
                   <input type="number" ng-model="viewpoint.z" class="form-control input-sm text-center" />
                 </div>
               </div>
+              {{viewpoint}}
             </div>
             <div class="form-group">
               <label>Plano de projeção</label>
@@ -87,40 +90,61 @@
               </select>
             </div>
 
-            <div class="form-group row" ng-repeat="(name,vertice) in model.vertices track by $index">
-              <div class="col-xs-3">
-                <input type="text" readonly="readonly" ng-model="name" class="form-control input-sm text-center" />
+            <div class="form-group">
+              <label>Pontos</label>
+              <div class="form-group row" ng-repeat="(name,vertice) in model.vertices track by $index">
+                <div class="col-xs-3">
+                  <button class="btn btn-danger btn-xs" ng-click="removeDot(name)" title="Remover ponto">&times;</button>
+                  <button class="btn btn-primary btn-xs" disabled>
+                    <span ng-bind="name"></span>
+                  </button>
+                </div>
+                <div class="col-xs-3">
+                  <input type="text" ng-model="vertice.x" class="form-control input-sm text-center" placeholder="X" />
+                </div>
+                <div class="col-xs-3">
+                  <input type="text" ng-model="vertice.y" class="form-control input-sm text-center" placeholder="Y" />
+                </div>
+                <div class="col-xs-3">
+                  <input type="text" ng-model="vertice.z" class="form-control input-sm text-center" placeholder="Z" />
+                </div>
               </div>
-              <div class="col-xs-3">
-                <input type="text" ng-model="vertice.x" class="form-control input-sm text-center" placeholder="X" />
-              </div>
-              <div class="col-xs-3">
-                <input type="text" ng-model="vertice.y" class="form-control input-sm text-center" placeholder="Y" />
-              </div>
-              <div class="col-xs-3">
-                <input type="text" ng-model="vertice.z" class="form-control input-sm text-center" placeholder="Z" />
+              <div class="row">
+                <div class="col-xs-3 col-xs-offset-9">
+                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addDot()">
+                    <strog>&plus;</strog>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            Superfícies
-          </div>
-          <div class="panel-body">
-            <div class="form-group row" ng-repeat="(name,vertices) in model.surfaces track by $index">
-              <div class="col-xs-3">
-                <input type="text" reado  nly="readonly" ng-model="name" class="form-control input-sm text-center" />
+            <div class="form-group">
+              <label>Superfícies</label>
+              <div class="form-group row" ng-repeat="surface in model.surfacesStr">
+                <div class="col-xs-3">
+                  <button class="btn btn-danger btn-xs" ng-click="removeSurface($index)" title="Remover superfície">&times;</button>
+                  <button class="btn btn-primary btn-xs" disabled>
+                    <span ng-bind="$index"></span>
+                  </button>
+                </div>
+                <div class="col-xs-9">
+                  <!--<select class="form-control" multiple
+                          ng-model="vertices"
+                          ng-options="name for (name,vertice) in model.vertices">
+                  </select>-->
+                  <input type="text" ng-model="surface" class="form-control input-sm text-center" ng-change="newSurface($index,surface)"
+                  />
+                </div>
               </div>
-              <div class="col-xs-9">
-                <!--<select class="form-control" multiple
-                        ng-model="vertices"
-                        ng-options="name for (name,vertice) in model.vertices">
-                </select>-->
-                <input type="text" ng-model="vertices" class="form-control input-sm text-center" placeholder="X" />
+              <div class="row">
+                <div class="col-xs-3 col-xs-offset-9">
+                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addSurface()">
+                    <strog>&plus;</strog>
+                  </button>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -129,106 +153,60 @@
       <div class="col-sm-8">
         <div class="panel panel-default">
           <div class="panel-body">
-            <button class="btn btn-primary btn-sm" ng-click="project(model, plane, viewpoint)">Project</button>
-            <hr/>
-
-            <svg width="600" height="600" viewPort="0 0 550 550" id="projection" style="padding:1rem;">
+            <div class="row">
+              <div class="col-xs-2">
+                <button class="btn btn-success btn" ng-click="project(projection.type, projection.grid, model, plane, viewpoint)"
+                id="btn-project">Projetar</button>
+              </div>
+              <div class="col-xs-3">
+                <label class="radio">
+                  <input type="radio" ng-model="projection.type" value="Perspectiva" checked/> Perspectiva
+                </label>
+              </div>
+              <div class="col-xs-3">
+                <label class="radio">
+                  <input type="radio" ng-model="projection.type" value="Paralela" /> Paralela
+                </label>
+              </div>
+              <div class="col-xs-3 text-right">
+                <label class="checkbox">
+                  <input type="checkbox" ng-model="projection.grid" /> Grade
+                </label>
+              </div>
+            </div>
+            <svg width="{{viewport.max.x - viewport.min.x + 45}}" height="{{viewport.max.y - viewport.min.y + 45}}"
+            viewPort="{{viewport.min.x}} {{viewport.min.y}} {{viewport.max.x}} {{viewport.max.y}}" id="projection"
+            style="padding:1rem;">
               <g ng-repeat="line in projection.lines">
-                <line x1="{{line.u.x}}" y1="{{line.u.y}}" x2="{{line.v.x}}" y2="{{line.v.y}}" stroke="#337ab7" stroke-width="2"/>
+                <line x1="{{line.u.x}}" y1="{{line.u.y}}" x2="{{line.v.x}}" y2="{{line.v.y}}" stroke="#5cb85c" stroke-width="2"
+                />
               </g>
-              <g ng-repeat="(name,vertices) in projection.dots">
-                <circle cx="{{vertices.x}}" cy="{{vertices.y}}" r="2" />
+              <g ng-repeat="(name,vertices) in projection.dots track by $index">
+                <circle cx="{{vertices.x}}" cy="{{vertices.y}}" r="4" class="dot" />
+                <g class="dotlabel">
+                  <rect x="{{vertices.x - 2}}" y="{{vertices.y - 2}}" width="25" height="15" style="fill: #eeeeee" />
+                  <text x="{{vertices.x + 6}}" y="{{vertices.y + 10}}">
+                    {{name}}
+                  </text>
+                </g>
               </g>
-
-
               <!--<g>
                 <line x1="0" y1="0" x2="" y2="100" stroke="#337ab7" stroke-width="2"/>
               </g>-->
             </svg>
           </div>
         </div>
-        {{model}}
       </div>
-
-    </section>
-    <section id="about" class="row hidden">
-      <h2>
-        Bem-vindo ao sistema de projeções.
-      </h2>
-      <p>
-        Através do sistema é possível observar a projeção de qualquer objeto de duas maneiras: persectiva e paralela. Para definir qual projeção deseja, basta seleciona-lá logo ao lado do botão "Project" no topo da área definida para projeção.
-      </p>
-      <h4>Como definir o ponto de vista:</h4>
-      <p>
-        Para definir o ponto de vista, basta preenchermos os três campos no local solicitado, os campos são os vores x, y e z do ponto de vista.
-      </p>
-      <h4>Como definir um plano de pojeção:</h4>
-      <p>
-        Para definir um plano de projeção é necessário informar três pontos pertencentes ao mesmo. Os pontos são definidos nos campos logo abaixo ao label solicitante. Para cada ponto deve ser informada as coordenadas x, y e z.
-      </p>
-      <h4>Como definir um objeto para projetar:</h4>
-      <p>
-        Para projetar um objeto precisamos definir os vértices e suas superfícies:
-        <ol>
-          <li>
-            Vértices:
-            <ul>
-              <li>
-                Definir as coordenadas x, y e z de cada vértice.
-              </li>
-              <li>
-                Para adicionar um novo vértice, basta clicar no botão com o ícone "+" logo abaixo.
-              </li>
-            </ul>
-          </li>
-          <li>
-            Superfícies:
-            <ul>
-              <li>
-                Definir quais são os vértices que contemplam a superfície informada, seguindo a regra da mão direira.
-              </li>
-              <li>
-                Para adicionar uma nova superfície, basta clicar no botão com o ícone "+" logo abaixo.
-              </li>
-            </ul>
-          </li>
-        </ol>
-      </p>
-      <h4>Como escolher qual o tipo de projeção desejada:</h4>
-      <p>
-        As opções de projeção ficam ao lado do botão "Project", basta selecionar qual a desejada e clicar no botão para efetuar a projeção.
-      </p>
-      <h4>Como esconder as faces ocultas da projeção:</h4>
-      <p>
-        Para esconder as faces ocultas da projeção basta marca a opção <strong>XXXXXX</strong> ao lado do botão "Project".
-      </p>
-      <h4>Como mudar o ponto de vista:</h4>
-      <p>
-        Para mudar o ponto de vista existem duas opções:
-        <ol>
-          <li>
-            Definir um novo ponto de vista através nos campos x, y e z do ponto de vista
-          </li>
-          <li>
-            Após uma porjeção realizada, apertar as teclas <strong>T1 T2 T3 T4...</strong> para deslocar o ponto de vista.
-          </li>
-        </ol>
-      </p>
-    </section>
-    <section id="contact" class="row hidden">
-      <p>
-        Qualquer dúvida, contato, sugestão ou reclamação entrar em contato com:
-        <ul>
-          <li>
-            João Luiz Ramalheira de Almeida - <a href="mailto:jlramalheira@gmail.com">jlramalheira@gmail.com</a>
-          </li>
-          <li>
-            Max Naegeler Roecker - <a href="mailto:max.roecker@gmail.com">max.roecker@gmail.com</a>
-          </li>
-        </ul>
-      </p>
     </section>
 
+    <section class="page" ng-if="(view == views[1])">
+      <h1>Informações</h1>
+    </section>
+
+
+    <section class="page" ng-if="(view == views[2])">
+      <h1>Contato</h1>
+    </section>
 
 
 

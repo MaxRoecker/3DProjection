@@ -155,6 +155,10 @@ var modelsJSON = [{
     "5": [7, 9, 6, 1, 0],
     "6": [8, 9, 7, 5]
   }
+}, {
+  "name": "void",
+  "vertices": {},
+  "surfaces": {}
 }];
 
 function Vector(x, y, z) {
@@ -235,6 +239,7 @@ function Model(name, vertices, surfaces) {
   this.name = name;
   this.vertices = [];
   this.surfaces = [];
+  this.surfacesStr = [];
   for (var point in vertices) {
     if (vertices.hasOwnProperty(point)) {
       this.vertices.push(
@@ -249,6 +254,7 @@ function Model(name, vertices, surfaces) {
   for (var surface in surfaces) {
     if (surfaces.hasOwnProperty(surface)) {
       this.surfaces.push(surfaces[surface]);
+      this.surfacesStr.push(JSON.stringify(surfaces[surface]));
     }
   }
 }
@@ -294,20 +300,29 @@ GraphicDirectives.projectionPerspective = function(planePoint, planeNormal, view
 
 GraphicDirectives.projectionParalel = function(planePoint, planeNormal, viewPoint) {
   var d0 = planeNormal.dotProduct(planePoint, planeNormal),
-    d1 = planeNormal.dotProduct(viewPoint, planeNormal),
-    d = d0 - d1;
+    d1 = planeNormal.dotProduct(viewPoint, planeNormal);
+
   return [
-    [d - viewPoint.x * planeNormal.x, -viewPoint.x * planeNormal.y, -viewPoint.x * planeNormal.z, viewPoint.x * d0],
-    [-viewPoint.y * planeNormal.x, d - viewPoint.y * planeNormal.y, -viewPoint.y * planeNormal.z, viewPoint.y * d0],
-    [-viewPoint.z * planeNormal.x, -viewPoint.z * planeNormal.y, d - viewPoint.z * planeNormal.z, viewPoint.z * d0],
-    [0, 0, 0, -d1],
+    [d1 + viewPoint.x * planeNormal.x, -viewPoint.x * planeNormal.y, -viewPoint.x * planeNormal.z, viewPoint.x * d0],
+    [-viewPoint.y * planeNormal.x, d1 - viewPoint.y * planeNormal.y, -viewPoint.y * planeNormal.z, viewPoint.y * d0],
+    [-viewPoint.z * planeNormal.x, -viewPoint.z * planeNormal.y, d1 - viewPoint.z * planeNormal.z, viewPoint.z * d0],
+    [0, 0, 0, d1]
   ];
 };
 
 GraphicDirectives.windowViewPort = function(window, viewport) {
   var a, t, aspectWindow, aspectViewport, newMaxX, newMaxY, sx, sy;
+  sx = (viewport.max.x - viewport.min.x) / (window.max.x - window.min.x);
+  sy = (viewport.max.y - viewport.min.y) / (window.max.y - window.min.y);
+  a = [
+    [sx, 0, 0, (-window.min.x * (viewport.max.x - viewport.min.x) / (window.max.x - window.min.x)) + viewport.min.x],
+    [0, sy, 0, (-window.min.y * (viewport.max.y - viewport.min.y) / (window.max.y - window.min.y)) + viewport.min.y],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
+  ];
+  return a;
 
-  aspectWindow = (window.max.x - window.min.x) / (window.max.y - window.min.y);
+  /*aspectWindow = (window.max.x - window.min.x) / (window.max.y - window.min.y);
   aspectViewport = (viewport.max.x - viewport.min.x) / (viewport.max.y - viewport.min.y);
 
   sx = (viewport.max.x - viewport.min.x) / (window.max.x - window.min.x);
@@ -329,7 +344,7 @@ GraphicDirectives.windowViewPort = function(window, viewport) {
       [0, 0, 0, 1]
     ];
   } else {
-    newMaxX = ((viewport.max.y - viewport.min.y) * aspectWindow) + viewport.min.x;
+    newMaxX = (aspectWindow*(viewport.max.y - viewport.min.y)) + viewport.min.x;
     a = [
       [1, 0, 0, (viewport.max.x - newMaxX) / 2],
       [0, 1, 0, 0],
@@ -337,7 +352,7 @@ GraphicDirectives.windowViewPort = function(window, viewport) {
       [0, 0, 0, 1]
     ];
   }
-  return Matrix.multiply(a, t);
+  return Matrix.multiply(a, t);*/
 };
 
 GraphicDirectives.translation = function(dx, dy, dz) {
@@ -362,26 +377,37 @@ GraphicDirectives.reflectionY = function() {
 var app = angular.module('3DProjections', []);
 
 app.controller('mainController', ['$scope', function($scope) {
+  $scope.views = ['projection','about','contact'];
+  $scope.view = $scope.views[0];
+
   $scope.models = new Array(modelsJSON.length);
   for (var i = 0; i < modelsJSON.length; i++) {
     var model = modelsJSON[i];
     $scope.models[i] = new Model(model.name, model.vertices, model.surfaces);
   };
+  $scope.projectionTypes = ['Paralela', 'Perspectiva']
 
   $scope.model = $scope.models[0];
   $scope.viewpoint = new Vector(0, 0, -20);
   $scope.plane = [
-    new Vector(20, 0, 0),
+    new Vector(1, 0, 0),
     new Vector(0, 0, 0),
-    new Vector(0, 20, 0)
+    new Vector(0, 1, 0)
   ];
+  $scope.viewport = {
+    'min': new Vector(0, 0, 0),
+    'max': new Vector(500, 500, 0),
+  }
   $scope.projection = {
+    'type': 'Perspectiva',
+    'grid': true,
     'dots': [],
     'lines': []
   };
 
-  $scope.project = function(model, plane, viewpoint) {
-    var u, v, n, d0, m, t, p;
+
+  $scope.project = function(type, grid, model, plane, viewpoint) {
+    var u, v, w, n, d0, m, p, t, window;
     u = new Vector(
       plane[0].x - plane[1].x,
       plane[0].y - plane[1].y,
@@ -394,42 +420,119 @@ app.controller('mainController', ['$scope', function($scope) {
     );
     n = u.crossProduct(u, v);
     d0 = n.dotProduct(n, plane[0]);
+
+
+    console.table(model.vertices);
     p = model.homogeneousCoordinates(model.vertices);
-    m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[0], n, viewpoint), p);
+    if (type == 'Paralela') {
+      m = Matrix.multiply(GraphicDirectives.projectionParalel(plane[1], n, viewpoint), p);
+    } else {
+      m = Matrix.multiply(GraphicDirectives.projectionPerspective(plane[1], n, viewpoint), p);
+    }
+    m = Matrix.multiply(GraphicDirectives.reflectionY(), m);
     m = model.cartesianCoordinates(m);
 
     var window = {
       'min': new Vector().min(m),
       'max': new Vector().max(m)
-    }
-    viewport = {
-      'min': new Vector(0,0,0),
-      'max': new Vector(400,400,0),
-    }
+    };
+
     p = model.homogeneousCoordinates(m);
-    m = Matrix.multiply(GraphicDirectives.windowViewPort(window,viewport),p);
-    m = model.cartesianCoordinates(m);
-    $scope.projection.dots = m;
-    console.table(model.vertices);
-    console.table(m);
+
+
+    t = Matrix.multiply(GraphicDirectives.windowViewPort(window, $scope.viewport), p);
+    console.table(t);
+    t = model.cartesianCoordinates(t);
 
     var lines = [];
+    var dots = [];
+
+    console.table(t);
+
     for (var i = 0; i < model.surfaces.length; i++) {
-      var dots = model.surfaces[i];
-      for (var j = 0; j < dots.length; j++) {
-        u = $scope.projection.dots[dots[j]];
-        v = $scope.projection.dots[dots[(j + 1) % dots.length]];
-        lines.push({
-          'u': u,
-          'v': v
-        });
+      var surface = model.surfaces[i];
+
+      u = new Vector(
+        model.vertices[surface[1]].x - model.vertices[surface[0]].x,
+        model.vertices[surface[1]].y - model.vertices[surface[0]].y,
+        model.vertices[surface[1]].z - model.vertices[surface[0]].z
+      );
+      v = new Vector(
+        model.vertices[surface[2]].x - model.vertices[surface[0]].x,
+        model.vertices[surface[2]].y - model.vertices[surface[0]].y,
+        model.vertices[surface[2]].z - model.vertices[surface[0]].z
+      );
+      n = u.crossProduct(u, v);
+      w = new Vector(
+        viewpoint.x - model.vertices[surface[0]].x,
+        viewpoint.y - model.vertices[surface[0]].y,
+        viewpoint.z - model.vertices[surface[0]].z
+      );
+      p = n.dotProduct(n, w);
+
+      if (p > 0 || grid) {
+        for (var j = 0; j < surface.length; j++) {
+          u = t[surface[j]];
+          v = t[surface[(j + 1) % surface.length]];
+          lines.push({
+            'u': u,
+            'v': v
+          });
+        }
       }
     }
+    $scope.projection.dots = t;
     $scope.projection.lines = lines;
-
-
   };
 
+  $scope.removeDot = function(index) {
+    delete $scope.model.vertices.splice(index, 1);
+  };
+  $scope.addDot = function() {
+    $scope.model.vertices.push(new Vector(0, 0, 0));
+  };
+  $scope.newSurface = function(index, surface) {
+    $scope.model.surfaces[index] = JSON.parse(surface);
+  };
+  $scope.removeSurface = function(index) {
+    delete $scope.model.surfaces.splice(index, 1);
+    $scope.model.surfacesStr = [];
+    for (var i = 0; i < $scope.model.surfaces.length; i++) {
+      $scope.model.surfacesStr.push(JSON.stringify($scope.model.surfaces[i]));
+    }
+  };
+  $scope.addSurface = function() {
+    $scope.model.surfaces.push([]);
+    $scope.model.surfacesStr = [];
+    for (var i = 0; i < $scope.model.surfaces.length; i++) {
+      $scope.model.surfacesStr.push(JSON.stringify($scope.model.surfaces[i]));
+    }
+  }
+
+  $(document).keypress(function(event) {
+    var aux;
+    switch (String.fromCharCode(event.which)) {
+      case 'w':
+        $scope.viewpoint.y += 1;
+        break;
+      case 's':
+        $scope.viewpoint.y -= 1;
+        break;
+      case 'a':
+        $scope.viewpoint.x -= 1;
+        break;
+      case 'd':
+        $scope.viewpoint.x += 1;
+        break;
+      case 'q':
+        $scope.viewpoint.z -= 1;
+        break;
+      case 'e':
+        $scope.viewpoint.z += 1;
+        break;
+    };
+    $('#btn-project').click();
+  });
 
 
 }]);

@@ -2,12 +2,35 @@ $icon-font-path: '../fonts/';
 
 // bower:scss
 @import "bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+
 // endbower
-
-
-.header{
+a {
+  color: #5cb85c;
+}
+a:hover{
+  color: #449d44;
+}
+.header {
+  display   : block;
+  box-sizing: border-box;
+  height    : auto;
+}
+#projection {
   display: block;
-  box-sizing: padding-box;
-  height: auto;
-  margin-bottom: 3rem;
+  margin : 0 auto;
+}
+.dot:hover {
+}
+.dotlabel{
+  opacity: 0;
+}
+.dotlabel:hover{
+  opacity: 1;
+  cursor: helpww;
+}
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus{
+  background-color: #5cb85c;
+}
+.page{
+  min-height: 600px;
 }
