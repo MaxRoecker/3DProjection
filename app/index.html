@@ -91,7 +91,7 @@
               <label>Pontos</label>
               <div class="form-group row" ng-repeat="(name,vertice) in model.vertices track by $index">
                 <div class="col-xs-3">
-                  <button class="btn btn-danger btn-xs" ng-click="removeDot(name)" title="Remover ponto">&times;</button>
+                  <button class="btn btn-danger btn-xs" ng-click="removeDot(name)" title="Remover ponto" ng-if="model.name == 'Outro'">&times;</button>
                   <button class="btn btn-primary btn-xs" disabled>
                     <span ng-bind="name"></span>
                   </button>
@@ -108,7 +108,7 @@
               </div>
               <div class="row">
                 <div class="col-xs-3 col-xs-offset-9">
-                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addDot()">
+                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addDot()" ng-if="model.name == 'Outro'">
                     <strog>&plus;</strog>
                   </button>
                 </div>
@@ -117,9 +117,9 @@
 
             <div class="form-group">
               <label>Superfícies</label>
-              <div class="form-group row" ng-repeat="surface in model.surfacesStr">
+              <div class="form-group row" ng-repeat="(index,surface) in model.surfacesStr track by $index">
                 <div class="col-xs-3">
-                  <button class="btn btn-danger btn-xs" ng-click="removeSurface($index)" title="Remover superfície">&times;</button>
+                  <button class="btn btn-danger btn-xs" ng-click="removeSurface($index)" title="Remover superfície" ng-if="model.name == 'Outro'">&times;</button>
                   <button class="btn btn-primary btn-xs" disabled>
                     <span ng-bind="$index"></span>
                   </button>
@@ -134,7 +134,7 @@
               </div>
               <div class="row">
                 <div class="col-xs-3 col-xs-offset-9">
-                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addSurface()">
+                  <button class="btn btn-block btn-primary" title="Adicionar ponto" ng-click="addSurface()" ng-if="model.name == 'Outro'">
                     <strog>&plus;</strog>
                   </button>
                 </div>
@@ -280,32 +280,87 @@
 
 
     <section class="page" ng-if="(view == views[2])">
-      <div class="row">
-        <h1>Alunos</h1>
-        <p>João Luiz Ramalheira de Almeida</p>
-        <ul>
-          <li>
-            <a href="mailto:jlramalheira@gmail.com">jlramalheira@gmail.com</a>
-          </li>
-          <li>
-            <small>(44)</small> 9945-4933
-          </li>
-        </ul>
-        <p>Max Naegeler Roecker</p>
-        <ul>
-          <li>
-            <a href="mailto:max.roecker@gmail.com">max.roecker@gmail.com</a>
-          </li>
-          <li>
-            <small>(44)</small> 9923-3441
-          </li>
-        </ul>
+      <div class="jumbotron">
+        <div class="row">
+          <h2>Contribuintes</h2>
+          <p>João Luiz Ramalheira de Almeida</p>
+          <ul>
+            <li>
+              <a href="mailto:jlramalheira@gmail.com">jlramalheira@gmail.com</a>
+            </li>
+          </ul>
+          <p>Max Naegeler Roecker</p>
+          <ul>
+            <li>
+              <a href="mailto:max.roecker@gmail.com">max.roecker@gmail.com</a>
+            </li>
+          </ul>
+        </div>
+          <div class="row">
+            <h2>Código</h2>
+            <p>
+              Esse projeto foi desenvolvido com:
+            </p>
+            <ul>
+              <li>
+                HTML ─ <i>HyperText Markup Language</i>
+              </li>
+              <li>
+                CSS ─ <i>Cascade Style-Sheet</i>
+              </li>
+              <li>
+                JavaScript ─ <i>ECMAScript 5</i>
+              </li>
+              <li>
+                SVG ─ <i>Scalable Vector Graphics</i>
+              </li>
+              <li>
+                AngularJS
+              </li>
+            </ul>
+            <p>
+              Você pode ter acesso ao código através do <a href="https://github.com/MaxRoecker/3DProjection">GitHub</a>.
+            </p>
+
+          </div>
+        <div class="row">
+          <h2>Licença</h2>
+          <p>
+            <pre>
+              Copyright (c) 2015 João Luiz Ramalheira and Max Roecker
+
+              Permission is hereby granted, free of charge, to any person obtaining a copy
+              of this software and associated documentation files (the "Software"), to deal
+              in the Software without restriction, including without limitation the rights
+              to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+              copies of the Software, and to permit persons to whom the Software is
+              furnished to do so, subject to the following conditions:
+
+              The above copyright notice and this permission notice shall be included in
+              all copies or substantial portions of the Software.
+
+              THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+              IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+              FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+              AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+              LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+              OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+              THE SOFTWARE.
+            </pre>
+          </p>
+        </div>
       </div>
 
     </section>
   </div>
 
   <!-- build:js scripts/plugins.js -->
+  <!-- endbuild -->
+
+  <!-- build:js scripts/vendor.js -->
+  <!-- bower:js -->
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/angular/angular.js"></script>
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/affix.js"></script>
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/alert.js"></script>
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js"></script>
@@ -318,12 +373,6 @@
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/scrollspy.js"></script>
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/collapse.js"></script>
   <script type="/bower_components/bootstrap-sass/assets/javascripts/bootstrap/tab.js"></script>
-  <!-- endbuild -->
-
-  <!-- build:js scripts/vendor.js -->
-  <!-- bower:js -->
-  <script src="/bower_components/jquery/dist/jquery.js"></script>
-  <script src="/bower_components/angular/angular.js"></script>
   <!-- endbower -->
   <!-- endbuild -->
 
